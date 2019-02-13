@@ -2,7 +2,7 @@
   "name": "lv-holidays",
   "main": "index.js",
   "dependencies": {
-    "request": "^2.85.0",
+    "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "whacko": "^0.19.1"
   }
