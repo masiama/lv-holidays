@@ -2,7 +2,7 @@
   "name": "lv-holidays",
   "main": "index.js",
   "dependencies": {
-    "node-fetch": "^2.6.1",
-    "node-html-parser": "^3.2.0"
+    "node-fetch": "^3.2.0",
+    "node-html-parser": "^5.2.0"
   }
 }
