@@ -1,5 +1,6 @@
-const fetch = require('node-fetch');
-const HTMLParser = require('node-html-parser');
+import fetch from 'node-fetch';
+import HTMLParser from 'node-html-parser';
+
 const MONTHS = ['Janvaris', 'Februaris', 'Marts', 'Aprilis', 'Maijs', 'Junijs', 'Julijs', 'Augusts', 'Septembris', 'Oktobris', 'Novembris', 'Decembris'];
 
 const isHoliday = async date => {
