@@ -3,7 +3,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "node-fetch": "^3.2.3",
+    "node-fetch": "^3.2.10",
     "node-html-parser": "^5.3.3"
   }
 }
