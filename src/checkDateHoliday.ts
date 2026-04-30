@@ -41,7 +41,7 @@ const secondsUntilNextYear = () => {
 export default async function checkDateHoliday(
   dateStr?: Temporal.PlainDate,
 ): Promise<HolidayResponse> {
-  const date = dateStr ?? Temporal.Now.zonedDateTimeISO(TIMEZONE);
+  const date = dateStr ?? Temporal.Now.zonedDateTimeISO(TIMEZONE).toPlainDateTime().toPlainDate();
   const year = date.year;
   const url = `https://api.prompt.lv/api/v1/info/holidays/LV/${year}`;
   const response = await fetch(url, { next: { revalidate: secondsUntilNextYear() } });
