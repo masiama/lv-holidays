@@ -20,43 +20,37 @@ type HolidayResponse =
   | { success: true; date: string; isHoliday: boolean }
   | { success: false; error: string };
 
-const secondsUntilNextYear = () => {
-  const now = Temporal.Now.zonedDateTimeISO(TIMEZONE);
-
-  const nextYear = now.with({
-    year: now.year + 1,
-    month: 1,
-    day: 1,
-    hour: 0,
-    minute: 0,
-    second: 0,
-    millisecond: 0,
-    microsecond: 0,
-    nanosecond: 0,
-  });
-
-  return now.until(nextYear).total("seconds");
-};
+const cache = new Map<number, z.infer<typeof ResponseSchema>>();
 
 export default async function checkDateHoliday(
   dateStr?: Temporal.PlainDate,
 ): Promise<HolidayResponse> {
   const date = dateStr ?? Temporal.Now.zonedDateTimeISO(TIMEZONE).toPlainDateTime().toPlainDate();
+  const validDateStr = date.toString();
   const year = date.year;
-  const url = `https://api.prompt.lv/api/v1/info/holidays/LV/${year}`;
-  const response = await fetch(url, { next: { revalidate: secondsUntilNextYear() } });
-  if (!response.ok) {
-    return { success: false, error: `Failed to fetch holidays: ${response.statusText}` };
+
+  let data = cache.get(year);
+  if (data === undefined) {
+    const response = await fetch(`https://api.prompt.lv/api/v1/info/holidays/LV/${year}`, {
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return { success: false, error: `Failed to fetch holidays: ${response.statusText}` };
+    }
+
+    const holidays = await response.json();
+    const parsed = ResponseSchema.safeParse(holidays);
+    if (parsed.success === false) {
+      return { success: false, error: "Invalid response format" };
+    }
+
+    cache.set(year, parsed.data);
+    data = parsed.data;
   }
 
-  const holidays = await response.json();
-  const parsed = ResponseSchema.safeParse(holidays);
-  if (parsed.success === false) {
-    return { success: false, error: "Invalid response format" };
-  }
-
-  const isHoliday = parsed.data.result.some(
-    (holiday) => holiday.kind === "holiday" && holiday.date === date.toString(),
+  const isHoliday = data.result.some(
+    (holiday) => holiday.kind === "holiday" && holiday.date === validDateStr,
   );
-  return { success: true, date: date.toString(), isHoliday };
+
+  return { success: true, date: validDateStr, isHoliday };
 }
