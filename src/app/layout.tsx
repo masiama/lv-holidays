@@ -1,7 +1,8 @@
 import { Analytics } from "@vercel/analytics/next";
-import clsx from "clsx";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
+import clsx from "clsx";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
