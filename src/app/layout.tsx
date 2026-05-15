@@ -1,7 +1,8 @@
+import { Analytics } from "@vercel/analytics/next";
 import clsx from "clsx";
-import type { Metadata } from "next";
 
 import "./globals.css";
+import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 
 const montserrat = Montserrat({ weight: ["700"], style: ["normal"] });
@@ -14,7 +15,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="lv" className={clsx(montserrat.className, "antialiased")}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
