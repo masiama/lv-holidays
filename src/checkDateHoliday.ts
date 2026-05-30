@@ -2,6 +2,7 @@ import { Temporal } from "temporal-polyfill";
 import { z } from "zod";
 
 const TIMEZONE = "Europe/Riga";
+const WEEKEND_DAYS = new Set([6, 7]);
 
 const HolidaySchema = z.object({
   name: z.string(),
@@ -9,6 +10,7 @@ const HolidaySchema = z.object({
   date: z.string(), // "2026-01-01"
   dow: z.string(),
 });
+type Holiday = z.infer<typeof HolidaySchema>;
 
 const ResponseSchema = z.object({
   success: z.boolean(),
@@ -16,8 +18,9 @@ const ResponseSchema = z.object({
   result: z.array(HolidaySchema),
 });
 
+type HolidayReason = "holiday" | "weekend" | null;
 type HolidayResponse =
-  | { success: true; date: string; isHoliday: boolean }
+  | { success: true; date: string; isHoliday: boolean; reason: HolidayReason }
   | { success: false; error: string };
 
 const cache = new Map<number, z.infer<typeof ResponseSchema>>();
@@ -48,9 +51,20 @@ export default async function checkDateHoliday(
     data = parsed.data;
   }
 
-  const isHoliday = data.result.some(
-    (holiday) => holiday.kind === "holiday" && holiday.date === validDateStr,
-  );
+  const todayEntry = data.result.find((entry) => entry.date === validDateStr);
 
-  return { success: true, date: validDateStr, isHoliday };
+  return { success: true, date: validDateStr, ...isHoliday(todayEntry, date) };
 }
+
+const isHoliday = (
+  entry: Holiday | undefined,
+  date: Temporal.PlainDate,
+): { isHoliday: boolean; reason: HolidayReason } => {
+  const dow = date.dayOfWeek;
+  if (entry?.kind === "holiday") return { isHoliday: true, reason: "holiday" };
+  if (entry?.kind === "warning" && WEEKEND_DAYS.has(Number(entry.dow))) {
+    return { isHoliday: false, reason: null };
+  }
+  if (WEEKEND_DAYS.has(dow)) return { isHoliday: true, reason: "weekend" };
+  return { isHoliday: false, reason: null };
+};
